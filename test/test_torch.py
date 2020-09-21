@@ -11284,6 +11284,19 @@ class TestTorchDeviceType(TestCase):
         with self.assertRaisesRegex(RuntimeError, 'signbit is not implemented for complex tensors.'):
             torch.signbit(t, out=out)
 
+    @dtypes(torch.cfloat, torch.cdouble)
+    def test_sgn(self, device, dtype):
+        x = torch.randn(100, dtype=dtype)
+        angle = x.angle()
+        out = x.sgn()
+        self.assertEqual(out.angle(), angle)
+        self.assertEqual(out.abs(), torch.ones_like(x).real)
+
+        x_out = torch.empty_like(x)
+        torch.sgn(x, out=x_out)
+        self.assertEqual(x_out.angle(), angle)
+        self.assertEqual(x_out.abs(), torch.ones_like(x).real)
+
     @dtypes(*(torch.testing.get_all_dtypes(include_bool=False)))
     def test_signbit_non_boolean_output(self, device, dtype):
         # test non-boolean tensors as the `out=` parameters
@@ -14705,6 +14718,8 @@ class TestTorchDeviceType(TestCase):
                 lambda x, y: x.logit_(1e-6),
                 lambda x, y: x.sign(),
                 lambda x, y: x.sign_(),
+                lambda x, y: x.sgn(),
+                lambda x, y: x.sgn_(),
                 lambda x, y: x.sin(),
                 lambda x, y: x.sin_(),
                 lambda x, y: x.sinh(),
